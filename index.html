@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>map-geo-data</title>
+  <link href="https://www.google.com/images/branding/product/ico/maps_32dp.ico" rel="shortcut icon" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+  <style>
+    #file_container {
+      border: 10px dashed #ccc;
+      width: 300px;
+      height: 300px;
+      margin: 20px auto;
+
+      font-family: sans-serif;
+      font-size: 18px;
+      text-align: center;
+      line-height: 50px;
+
+      position: relative;
+    }
+    #file_container.hover {
+      border: 10px dashed #333;
+    }
+    #file_container > .credits {
+      font-size: 0.65em;
+      line-height: 2em;
+      text-align: left;
+      padding-left: 1em;
+
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      width: 100%;
+      overflow: visible;
+    }
+    #file_container > .credits > ul {
+      margin: 0;
+      padding-top: 0;
+    }
+    #file_container > .credits > ul a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    body,
+    body > #map_container {margin:0; padding:0;}
+
+    .map_marker, .map_marker_red, .map_marker_green, .map_marker_blue { padding:2px 0; text-align:center; color:#6FF; width:20px; height:32px; font-family:verdana; font-size:10px; font-weight:bold; color:#fff; opacity:0.8; filter:alpha(opacity=80); /* For IE8 and earlier */ }
+    .map_marker,
+    .map_marker_red   { background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAgCAYAAAASYli2AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2RpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2QTQyOEY4QzJGMUJFNTExQjUzRkIyQTY4QTMxMEYxRiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpBMjc5QTc4MTFCMzIxMUU1QjkzRkZDNjIzMTIwOENERiIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpBMjc5QTc4MDFCMzIxMUU1QjkzRkZDNjIzMTIwOENERiIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IFdpbmRvd3MiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2QTQyOEY4QzJGMUJFNTExQjUzRkIyQTY4QTMxMEYxRiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2QTQyOEY4QzJGMUJFNTExQjUzRkIyQTY4QTMxMEYxRiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PtQDLM0AAAYvSURBVHjadFZJiBxlFH7/UmtvM51O4mh04nowRBEFRVQUNeBBMBcPQfGggifx5kEQb3rQk6IoGBFcwDUEtxA0mjGZQxJCXEgMuCczTrpnurprr/oX39/bTMZYxd9V1fX/33vve997f5HmphpA6YNFACQUlFigatyG7Rsq/q7mxpn9YXSzq8W1m32en46KNtX0kMfgzMF2txskGqQEWzEmCBAliADS3FwDUlSAgqCEUzVlA9t58Yb7N9n84dtq1bu22NY0YQqUVmDhrE4J8Vy/fyQCvfvDsysfLSRFGuYFdYArRABW8VxbaEZ8TmXN480HZ6ZeemRT44U765VtHhFeXGQQxjlkRQk5ulPjYN9Ur2y9zLF32hSu+UfBnBA0TKWkQAygXbc0KQvfdhtPbm299cTM9EMcNF2IYmgHMURpDmkpIM0FJFkOYZJBhM91i8HNU5Vt05a1/Xg/2xcIEUuQFnOqjiZAyWOzrZcfv2RqV1wWsNRNIEpykBoACBrG01gHfNY48kJAXBTAGIftdecqAHXFgeXic6JUwQjn+t6ZTTuemm0+ayvl/tONIUFvKPJhMAwY0TC6N1eK75BxpSFBGhzbguum/Kt/TrLTx4PgBNsxO+Pe3fSfu73h3XS2Fw88I2y42DgIAzDzBKuoeFC8F1JAicAt12UNhzUCrfZQ17Zn7mhWd0ToleGLUDKIy5yTUC94aGCUQ5oV0E4zuK1evfWe6cYslULfsNmizagsQSo9mqony8Zw2hjRegI2eDfiNMkLKLX0pCL30csd+0YbOclLhS+HHlHkyUCNAcx1HPYQGM4zmGL2ON5s4OQi7jABDC1KpYaWNUz8G4OQdWGb56GxkUGMTON6h5OS9kqUFVYAJXrd4vNB9Bq3xvcDYJMgnCvxt6Cg6Mmk+K6vlfQsPmJPD/NA9IS3tQDjMeRQD8xanCKHGpYz9RttWPTP3+PsTM3FauRsdfG6nJILZFsP9YMCp+BQkv6aZN/TXMulw0G6x7UsqLr2gItBcvR/PVpvQBphIVit4kJXqPlFES/QYyuhOJ3ke5dyEbVqPrgO9i8tQQO5gFzWcgqDaqpXPGwYDOaD9NOTK7JHbSTzl6Q8PB9mhz3Oodmogo18DkBHcjnPQz00oqgCv+pCq+LAQla0TyT5oUKikRzj+ymMs6+DcE8sUZ0YeqtZg5rvDog0chI4zFUZIEwWtTk06nWY8jEiNDYfpp8diuLjZr7Ro55Cjw4uR+8d3Vh/9JaKc6OFQm9O1cHHjmL6YCnVIE0mRAujcBDQwbJDcuBcIXpz/ewdIx7TnUxJICqBWKreB+fiN7T5y4SlJBgpNZCj6boPGxoVmK56UPdscKkRtgALp/4Y5ScOLSXfhZF55kAzfNkTAjIM6WC7/8EPSXnKw/+MT1IPi5UZy1gNRndGBXKUJIlqONBNX18UPfm3XoFzLABq4UqOZOKV9PIseGux+1JpQsMFhjNNYNIwJrWNw6MmmdmxY0H2uQuMuAr3BokeEgzcDIpmGVb1N+3g/W+D/ECFkUHPWw9mDmPMaGD3Yvji2TzpOcq13KwBblEH3BUFjAZhnJJ+XsS7z3ReDiQowxXR65oCnhUU85F+cXS+m+7vi5wTykBokxTsCZa2YDy4Aubjhni0l335TZjucSgdtv01jZabRkCIfHcxePW3NFrm1PJAC6p5CpplJqVkVLlIuZbSMluqptmn54Ln/8rlij1uBGuqpFOUh6/y+d4WZhUVHpdUFTjADLq+ooZRKTi5HB39pBO+zegqFMOXidLZvm782p0tb2WLxzFUbQShJrRsbm6cLMBawJBsyHAO5gSqNr/0zetn5rY59myMuqwxrNl+fuCZXxZ3YM2Idi4NIFKwSjTzvQqMey/2Gexrw6Zpunoo46CvaOeeVu0BG0s0w7Uv/LH0+JFu+GtfUDqMaMjv+MSojYiHAzsbemb2B22qQNo486t25+O9K8lnM9javu5EXxzshHMetV2fuviBhT1UO/i1tDpYFXsZIfoCQ+FWxZ1EqSwq5PJWr3LDK3+1n16Iiz85Y9gjzE4iR/StDtLaOA3/d6Cu+ECeXLKaa13ZSdUpqgQSjB8ckso1+9nk+FeAAQDdeV2ETr0I8gAAAABJRU5ErkJggg==) top left no-repeat; }
+    .map_marker_green { background:url(data:image/png;base64,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) top left no-repeat; }
+    .map_marker_blue  { background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAgCAYAAAASYli2AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABPpJREFUeNqclWtsVEUUx3/37q5uC6WllLIVFQIVaRtFaJRQTaqSaky0IKIEEyLGRmNMtIF+MD4SP0g0Bj8QQMMjPCSKUcS6QAipPLZgDQWKWmhFsLbSQlsQ+9i2W3pvr+feO8tul7UmTjI7szNz/+d//ufMGY2RTZc+zC3y+6CVynxyOM1cTPK5i0HquSLzHxhDK1Xa3/Q538jpVAPGDUM7mouTKr0/CubhWespslk2fg6PvB1gvG8sDMgn2XJg51X6qmo5IdMtbHt4F5dDAzeISNNcC84fg7T8TErPrlq0mLKKAN4TXVDbDi0dsuuFzHS4PwDF0j+Tvc1Bvub7xtdpfFROtduglg3olx5BK06n/Mi2fc+xsDksH5yFXxqEWUSJYbqD5oG8abB0FhTdDvMPcoBVa5bRW35Ftn02oMdGZom1YVcFZfVia0c1NF1SQJ44hQfVKO6nTIKyebBwpoBu4hs25rwgLAd0x/Z9VknpchZ3XBVhDgnYnwrIM5Kd7bbTxwjzblh3FA62wvoXKSWv7WlbOp0Z3/kpYnlFFhlbTsFFG+zWOFZmHLBn5NwS0K21MDmCj5f05UwrHqeTVZqTX8JjtWKprkkpasYBevj3JoYvC4HPLohMc4XWQ0em6PQw+5UsMk+Iu9bgKB+bCYaia6LnmTboMEgRjZ/QJXULJwur5r/czaTamQlrCcDnJcEzbW3TCXhtgdNk3puQHiPcTXTbM/KcJd8aEQdwSOca4U6Zp3j/QzMzyVyd9UnvwdFfotzUGAoZmDOzEhh44twzE9YVkKbWszKg05arhSadjLyWzWdoLZoiB9KTCD9KtC0V6TSRbYqfAS5wTMcMdnCUylxhOOdO5xLGWCUwSmpACkdRAezt4kd6xlzSaVxgCHJwQyvhpYUw/jYV7dHSJbou7ArzBVBc3l/Nt5zp79adzT/W1OyuoyZPNhYUSYAmKFAzCUMzBjbtXikSwm51s9TJ81InVR3TuFwe4RiVdWE3OEtKYMYMBTQY15UBTQrjrAfg8bshV7Ljtzr20rDydLQeKhap6XzUd3B9AYUthlsELkjl+V1qYWfYJZciF2CieDF1khMEp+BWh+kOrmURrcFDNC3AzT6PVOzr/d3sZqNRwAbbXUO6zXZqlptjTp4a7uiVMSJ9kgQkWMPPVBeE0CbKgQCuhtf7XQrVOV+9cY5fZ4p1u673Gi7IOBtIou8z3BvRq4LWY48hIUCDiRXCflP0OLnF/fYudvBxp3LHfkeGvDdqKkNGbG4bfe0cpzi1Zt8N6VRQRuQpx7Wdb4Y4PHts7DoOxYHZLdu9apYYX01febd7+5bIUJzI0Ol9bAquPRBmONfvuhltPq8LbhurOM5JTq6scsMnrxbyHlAYo6rAPMojP+9Zn1fOZ1FNl3JXFQG7MuVmYC57mTIatW1qaUjdsZtclkwLCHAgQmXjB2+1cm2yN1ZRou2LdmqYTlD9tZ/768k0jIJadrT4Kf9kw162p/ljm2kCXh8hsv8wn/KkFD6/7arzpg+PUusDcfPiO9hqNW+ssqxX91jWjsOWxYfWITz5Xid3kzT95qV2Yo9m6CLreKdNCud0+Xc6IpJsD76P2SAVtF9PBqiNQjW65+dd68uh5yn1rWUPn2jPuMFbIbq1jeZqUkBXwewVJayz6pmwYl7Ms1T+T/OqZz9VoO9Rwfao9aTe/SPAAKFLutmFFdb7AAAAAElFTkSuQmCC) top left no-repeat; }
+  </style>
+
+  <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+  <script>
+    const file_container_id = 'file_container'
+    const  map_container_id = 'map_container'
+
+    const init = function(geo_data) {
+      if (!geo_data) return
+      if (typeof geo_data !== 'object') return
+      if (!Array.isArray(geo_data.pins) && !Array.isArray(geo_data.path)) return
+      if (!geo_data.pins.length && !geo_data.path.length) return
+
+      init_dom()
+      init_map(geo_data)
+    }
+
+    const init_dom = function() {
+      const fc = document.getElementById(file_container_id)
+      const mc = document.getElementById( map_container_id)
+
+      const w = document.documentElement.clientWidth
+      const h = document.documentElement.clientHeight
+
+      fc.style.display = 'none'
+
+      mc.style.display = 'block'
+      mc.style.width   = w + 'px'
+      mc.style.height  = h + 'px'
+    }
+
+    const init_map = function(geo_data) {
+      var latlngs = [];
+      var num = 0;
+
+      var map = L.map(map_container_id, { gestureHandling: true });
+
+      var str
+      str = 'https://[s].tile.openstreetmap.org/[z]/[x]/[y].png';
+      str = str.replace(/\[/g, '{');
+      str = str.replace(/\]/g, '}');
+
+      L.tileLayer(str, {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+      }).addTo(map);
+
+      L.control.scale().addTo(map);
+
+      if (geo_data['path'].length > 0) {
+        geo_data['path'].forEach(([lat, lng]) => {
+          latlngs.push(new L.LatLng(lat, lng));
+        })
+
+        polyline = L.polyline(latlngs, {'color':'blue'}).addTo(map);
+      }
+
+      if (geo_data['pins'].length > 0) {
+        geo_data['pins'].forEach((v) => {
+          latlng = new L.LatLng(v[0], v[1]);
+          latlngs.push(latlng);
+
+          if (typeof v[3] != 'undefined')
+            cls = ((v[3] == 1) ? "map_marker_red" : (v[3] == 0 ? "map_marker_green" : "map_marker_blue"));
+          else
+            cls = "map_marker";
+
+          myIco = L.divIcon({className:cls, html:++num, iconSize: L.point(20, 32)});
+
+          marker = L.marker(latlng, {icon:myIco, title:v[2], draggable:false}).addTo(map);
+        })
+      }
+
+      if (latlngs.length > 0) {
+        bounds = new L.latLngBounds(latlngs);
+        //map.setView(bounds.getCenter(), 12);
+        map.fitBounds(bounds);
+      }
+    }
+
+    const init_drop = function() {
+      if (typeof window.FileReader === 'undefined') return
+
+      const fc = document.getElementById(file_container_id)
+
+      fc.ondragover = () => {
+        fc.className = 'hover'
+        return false
+      }
+
+      fc.ondragend = () => {
+        fc.className = ''
+        return false
+      }
+
+      fc.ondrop = (e) => {
+        fc.className = ''
+        e.preventDefault()
+
+        if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return false
+
+        const file = e.dataTransfer.files[0]
+        const reader = new FileReader()
+
+        reader.onload = (event) => {
+          const text = reader.result
+          const domparser = new DOMParser()
+          const xml = domparser.parseFromString(text.trim(), 'text/xml')
+          const geo_data = process_xml_document(xml, file.name)
+
+          init(geo_data)
+        }
+
+        reader.readAsText(file, 'text/plain')
+        return false
+      }
+    }
+
+    const process_xml_document = function(xml, file_name) {
+      const indx_ext = file_name.lastIndexOf('.')
+      const file_ext = ((indx_ext === -1) || (indx_ext + 1 === file_name.length)) ? '' : file_name.substr(indx_ext + 1).toLowerCase()
+      const geo_data = {pins: [], path: []}
+
+      switch(file_ext) {
+        case 'gpx':
+          {
+            const append_data = (nodes, arr, add_name, require_name) => {
+              if (!nodes) return
+
+              ;[...nodes].forEach(el => {
+                let  lon = el.getAttribute('lon')
+                let  lat = el.getAttribute('lat')
+                let data = [lat, lon]
+
+                if (add_name) {
+                  let name = el.querySelector('name')
+                      name = name ? name.innerHTML.trim() : undefined
+
+                  if (name)
+                    data.push(name)
+                }
+
+                if (add_name && require_name && (data.length < 3)) return
+
+                arr.push(data)
+              })
+            }
+
+            const wpt   = xml.querySelectorAll('wpt[lat][lon]')
+            const rtept = xml.querySelectorAll('rtept[lat][lon]')
+
+            append_data(wpt,   geo_data.pins, true,  false)
+            append_data(rtept, geo_data.pins, true,  true)
+            append_data(rtept, geo_data.path, false, false)
+          }
+          break
+        case 'kml':
+          {
+            const append_data = (nodes, arr, add_name, multi_line) => {
+              if (!nodes) return
+
+              ;[...nodes].forEach(el => {
+                let txt = el.innerHTML.trim()
+                if (!txt) return
+
+                txt = (multi_line) ? txt.split(/\s*[\r\n]+\s*/g) : [txt]
+
+                txt.forEach(coords => {
+                  if (!coords) return
+
+                  let [lon, lat] = coords.split(',')
+                  if (!lon || !lat) return
+                  let data = [lat, lon]
+
+                  if (add_name) {
+                    let placemark = el.parentElement.parentElement
+                    let name = placemark.querySelector('name')
+                        name = name ? name.innerHTML.trim() : undefined
+
+                    if (name)
+                      data.push(name)
+                  }
+                  arr.push(data)
+                })
+              })
+            }
+
+            const points = xml.querySelectorAll('Placemark > Point > coordinates:first-child')
+            const lines  = xml.querySelectorAll('Placemark > LineString > coordinates')
+
+            append_data(points, geo_data.pins, true,  false)
+            append_data(lines,  geo_data.path, false, true)
+          }
+          break
+        default:
+          break
+      }
+      return geo_data
+    }
+  </script>
+</head>
+
+<body>
+  <div id="file_container">
+    <p>Drag/Drop Geo-Data File.</p>
+    <p>Supported Types: GPX, KML</p>
+    <div class="credits">
+      Powered By:
+      <ul>
+        <li><a target="_blank" href="https://www.openstreetmap.org/">OpenStreetMap</a></li>
+        <li><a target="_blank" href="https://github.com/Leaflet/Leaflet">Leaflet</a></li>
+      </ul>
+    </div>
+  </div>
+  <div id="map_container"></div>
+
+  <script>
+    init_drop()
+  </script>
+</body>
+</html>
