@@ -168,6 +168,14 @@
       }
     }
 
+    const strip_html_entities = function(html) {
+      if (!html) return ''
+
+      let s = document.createElement('span')
+      s.innerHTML = html
+      return s.innerText
+    }
+
     const process_xml_document = function(xml, file_name) {
       const indx_ext = file_name.lastIndexOf('.')
       const file_ext = ((indx_ext === -1) || (indx_ext + 1 === file_name.length)) ? '' : file_name.substr(indx_ext + 1).toLowerCase()
@@ -186,7 +194,8 @@
 
                 if (add_name) {
                   let name = el.querySelector('name')
-                      name = name ? name.innerHTML.trim() : undefined
+                      name = name ? name.innerHTML.trim() : ''
+                      name = strip_html_entities(name)
 
                   if (name)
                     data.push(name)
@@ -227,7 +236,8 @@
                   if (add_name) {
                     let placemark = el.parentElement.parentElement
                     let name = placemark.querySelector('name')
-                        name = name ? name.innerHTML.trim() : undefined
+                        name = name ? name.innerHTML.trim() : ''
+                        name = strip_html_entities(name)
 
                     if (name)
                       data.push(name)
