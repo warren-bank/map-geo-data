@@ -100,26 +100,38 @@
       L.control.scale().addTo(map);
 
       if (geo_data['path'].length > 0) {
-        geo_data['path'].forEach(([lat, lng]) => {
-          latlngs.push(new L.LatLng(lat, lng));
+        geo_data['path'].forEach(({lat, lon}) => {
+          latlngs.push(new L.LatLng(lat, lon));
         })
 
         polyline = L.polyline(latlngs, {'color':'blue'}).addTo(map);
       }
 
       if (geo_data['pins'].length > 0) {
-        geo_data['pins'].forEach((v) => {
-          latlng = new L.LatLng(v[0], v[1]);
+        geo_data['pins'].forEach(({lat, lon, title, map_marker_style}) => {
+          latlng = new L.LatLng(lat, lon);
           latlngs.push(latlng);
 
-          if (typeof v[3] != 'undefined')
-            cls = ((v[3] == 1) ? "map_marker_red" : (v[3] == 0 ? "map_marker_green" : "map_marker_blue"));
-          else
-            cls = "map_marker";
+          if (typeof map_marker_style !== 'number')
+            map_marker_style = 1
 
-          myIco = L.divIcon({className:cls, html:++num, iconSize: L.point(20, 32)});
+          let map_marker_class, map_marker_icon, map_marker
 
-          marker = L.marker(latlng, {icon:myIco, title:v[2], draggable:false}).addTo(map);
+          switch (map_marker_style) {
+            case 0:
+              map_marker_class = 'map_marker_green'
+              break
+            case 1:
+              map_marker_class = 'map_marker_red'
+              break
+            default:
+              map_marker_class = 'map_marker_blue'
+              break
+          }
+
+          map_marker_icon = L.divIcon({className:map_marker_class, html:++num, iconSize: L.point(20, 32)});
+
+          map_marker = L.marker(latlng, {icon:map_marker_icon, title, draggable:false}).addTo(map);
         })
       }
 
@@ -184,24 +196,24 @@
       switch(file_ext) {
         case 'gpx':
           {
-            const append_data = (nodes, arr, add_name, require_name) => {
+            const append_data = (nodes, arr, add_title, require_title) => {
               if (!nodes) return
 
               ;[...nodes].forEach(el => {
                 let  lon = el.getAttribute('lon')
                 let  lat = el.getAttribute('lat')
-                let data = [lat, lon]
+                let data = {lon, lat, title: null, map_marker_style: null}
 
-                if (add_name) {
+                if (add_title) {
                   let name = el.querySelector('name')
                       name = name ? name.innerHTML.trim() : ''
                       name = strip_html_entities(name)
 
                   if (name)
-                    data.push(name)
+                    data.title = name
                 }
 
-                if (add_name && require_name && (data.length < 3)) return
+                if (add_title && require_title && !data.title) return
 
                 arr.push(data)
               })
@@ -217,7 +229,7 @@
           break
         case 'kml':
           {
-            const append_data = (nodes, arr, add_name, multi_line) => {
+            const append_data = (nodes, arr, add_title, require_title, multi_line) => {
               if (!nodes) return
 
               ;[...nodes].forEach(el => {
@@ -231,17 +243,20 @@
 
                   let [lon, lat] = coords.split(',')
                   if (!lon || !lat) return
-                  let data = [lat, lon]
+                  let data = {lon, lat, title: null, map_marker_style: null}
 
-                  if (add_name) {
+                  if (add_title) {
                     let placemark = el.parentElement.parentElement
                     let name = placemark.querySelector('name')
                         name = name ? name.innerHTML.trim() : ''
                         name = strip_html_entities(name)
 
                     if (name)
-                      data.push(name)
+                      data.title = name
                   }
+
+                  if (add_title && require_title && !data.title) return
+
                   arr.push(data)
                 })
               })
@@ -250,8 +265,8 @@
             const points = xml.querySelectorAll('Placemark > Point > coordinates:first-child')
             const lines  = xml.querySelectorAll('Placemark > LineString > coordinates')
 
-            append_data(points, geo_data.pins, true,  false)
-            append_data(lines,  geo_data.path, false, true)
+            append_data(points, geo_data.pins, true,  true,  false)
+            append_data(lines,  geo_data.path, false, false, true)
           }
           break
         default:
