@@ -1,0 +1,2 @@
+https://github.com/openstreetmap/openstreetmap-website/blob/live/app/assets/images/favicon.ico
+https://github.com/openstreetmap/openstreetmap-website/blob/live/LICENSE
