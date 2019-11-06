@@ -180,6 +180,20 @@
       }
     }
 
+    const extract_innerText = function(node) {
+      let text = ''
+
+      if (node) {
+        text = (node.hasChildNodes() && (node.firstChild.nodeType === Node.CDATA_SECTION_NODE))
+          ? node.firstChild.data
+          : node.innerHTML.trim()
+
+        text = strip_html_entities(text)
+      }
+
+      return text
+    }
+
     const strip_html_entities = function(html) {
       if (!html) return ''
 
@@ -206,8 +220,7 @@
 
                 if (add_title) {
                   let name = el.querySelector('name')
-                      name = name ? name.innerHTML.trim() : ''
-                      name = strip_html_entities(name)
+                      name = extract_innerText(name)
 
                   if (name)
                     data.title = name
@@ -248,8 +261,7 @@
                   if (add_title) {
                     let placemark = el.parentElement.parentElement
                     let name = placemark.querySelector('name')
-                        name = name ? name.innerHTML.trim() : ''
-                        name = strip_html_entities(name)
+                        name = extract_innerText(name)
 
                     if (name)
                       data.title = name
